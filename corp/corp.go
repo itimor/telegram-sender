@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // Err 微信返回错误
@@ -18,8 +19,8 @@ type Err struct {
 
 // Client
 type Client struct {
-	token   string
-	openUrl string
+	token      string
+	mangotoken string
 }
 
 // Result 发送消息返回结果
@@ -31,10 +32,10 @@ type Result struct {
 }
 
 // New
-func New(token string) *Client {
+func New(token string, mongotoken string) *Client {
 	c := new(Client)
-	c.openUrl = "https://api.telegram.org/bot"
 	c.token = token
+	c.mangotoken = mangotoken
 	return c
 }
 
@@ -42,26 +43,42 @@ func (c Client) GetToken() string {
 	return c.token
 }
 
+func (c Client) GetMangoToken() string {
+	return c.mangotoken
+}
+
+// MangoMessage 消息主体参数
+type MangoMessage struct {
+	RoomName string `json:"roomname"`
+	Text     string `json:"text"`
+}
+
 // Send 发送信息
 func (c *Client) Send(touser string, msg string) error {
-	token := c.GetToken()
-
-	var method string = "GET"
+	var token string
 	var resultByte []byte
 	var err error
-	if method == "GET" {
-		URL, _ := url.Parse(c.openUrl + token + "/sendMessage")
+	user := strings.Split(touser, "|")
+
+	if user[0] == "tg" {
+		token = c.GetToken()
+		tgurl, _ := url.Parse("https://api.telegram.org/bot" + token + "/sendMessage")
 		params := url.Values{}
-		params.Set("chat_id", touser)
+		params.Set("chat_id", user[1])
 		params.Set("text", msg)
-		URL.RawQuery = params.Encode()
-		urlPath := URL.String()
+		tgurl.RawQuery = params.Encode()
+		urlPath := tgurl.String()
 		println(urlPath)
 		resultByte, err = jsonGet(urlPath)
 	} else {
-		// 此处无用代码
-		url := c.openUrl + token + "/sendMessage?chat_id=" + touser + "&text=" + msg
-		resultByte, err = jsonPost(url, msg)
+		var mongomsg *MangoMessage = new(MangoMessage)
+		mongomsg.RoomName = user[1]
+		mongomsg.Text = msg
+		token = c.GetMangoToken()
+		mgurl, _ := url.Parse("https://im.imangoim.com:9091/plugins/xhcodrestapi/v1/apiservice/user" + token + "/sendMessage")
+		urlPath := mgurl.String()
+		println(urlPath)
+		resultByte, err = jsonPost(urlPath, mongomsg)
 	}
 
 	if err != nil {
@@ -111,8 +128,13 @@ func jsonPost(url string, data interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// r, err := http.Post(url, "application/json;charset=utf-8", bytes.NewReader(jsonBody))
 
-	r, err := http.Post(url, "application/json;charset=utf-8", bytes.NewReader(jsonBody))
+	r, err := http.NewRequest("POST", "application/json;charset=utf-8", bytes.NewReader(jsonBody))
+	r.Header.Add("Authorization", "eXwdrXrvrjsHDs7F")
+	clt := http.Client{}
+	clt.Do(r)
+
 	if err != nil {
 		return nil, err
 	}

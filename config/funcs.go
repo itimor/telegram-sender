@@ -27,9 +27,8 @@ func InitLogger() {
 
 func Test(args []string) {
 	c := Get()
-	// telegram 测试
-	tgClient := corp.New(c.Telegram.Token)
-
+	// 测试
+	tgClient := corp.New(c.Telegram.Token, c.Telegram.MangoToken)
 	if len(args) == 0 {
 		fmt.Println("mail address not given")
 		os.Exit(1)

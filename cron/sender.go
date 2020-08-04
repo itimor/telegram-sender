@@ -27,7 +27,7 @@ func SendTelegram() {
 
 	semaphore = make(chan int, c.Consumer.Worker)
 
-	tgClient = corp.New(c.Telegram.Token)
+	tgClient = corp.New(c.Telegram.Token, c.Telegram.MangoToken)
 
 	for {
 		messages := redisc.Pop(1, c.Consumer.Queue)

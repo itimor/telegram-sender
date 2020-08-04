@@ -38,7 +38,8 @@ type consumerSection struct {
 }
 
 type TelegramSection struct {
-	Token string `yaml:"token"`
+	Token      string `yaml:"token"`
+	MangoToken string `yaml:"mongo_token"`
 }
 
 var yaml Config
