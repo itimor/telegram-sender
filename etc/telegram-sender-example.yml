@@ -19,5 +19,5 @@ consumer:
   worker: 10
 
 telegram:
-  token: "xxx:xxx"
-  mongo_token: "xxx:xxx"
+  token: "723532221:AAH8SSfM7SfTe4HmhV72QdLbOUW3akphUL8"
+  mongo_token: "cod_60005140:ff60905958d376ed375d3af9e2bade95"

@@ -32,7 +32,7 @@ type Result struct {
 }
 
 // New
-func New(token string, mongotoken string) *Client {
+func New(token string, mangotoken string) *Client {
 	c := new(Client)
 	c.token = token
 	c.mangotoken = mangotoken
