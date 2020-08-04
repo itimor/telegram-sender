@@ -2,7 +2,7 @@
 
 Nightingale的理念，是将告警事件扔到redis里就不管了，接下来由各种sender来读取redis里的事件并发送，毕竟发送报警的方式太多了，适配起来比较费劲，希望社区同仁能够共建。
 
-这里提供一个微信的sender，参考了[https://github.com/yanjunhui/chat](https://github.com/yanjunhui/chat)，具体如何获取企业微信信息，也可以参看yanjunhui这个repo
+这里提供一个小飞机(telegram)的sender，参考了[https://github.com/yanjunhui/chat](https://github.com/yanjunhui/chat)，具体如何获取企业微信信息，也可以参看yanjunhui这个repo
 
 ## compile
 
