@@ -133,24 +133,26 @@ func jsonPost(url string, data interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
+	fmt.Println("query:", string(jsonBody))
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(jsonBody)))
+
 	if err != nil {
-		logger.Info("mango new post request err =>", err)
+		logger.Info("ding talk new post request err =>", err)
 		return nil, err
 	}
 	req.Header.Set("Authorization", "eXwdrXrvrjsHDs7F")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 
 	client := getClient()
-	// client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Error("mango post request err =>", err)
+		logger.Error("ding talk post request err =>", err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
-
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Header:", resp.Header["Authorization"])
 	return ioutil.ReadAll(resp.Body)
 }
 

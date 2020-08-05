@@ -92,6 +92,7 @@ func aconf() {
 	if file.IsExist(*conf) {
 		return
 	}
+	println(*conf)
 
 	fmt.Println("no configuration file for sender")
 	os.Exit(1)

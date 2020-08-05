@@ -1,0 +1,23 @@
+---
+logger:
+  dir: "logs/telegram-sender"
+  level: "DEBUG"
+  keepHours: 24
+
+redis:
+  addr: "127.0.0.1:6379"
+  pass: ""
+  idle: 5
+  timeout:
+    conn: 500
+    read: 3000
+    write: 3000
+
+# 这个配置不用动，worker是调用telegram的并发数
+consumer:
+  queue: "/itimor/sender/im"
+  worker: 10
+
+telegram:
+  token: "xxx:xxx"
+  mongo_token: "ooo:ooo"
