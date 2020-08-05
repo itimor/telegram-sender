@@ -2,14 +2,21 @@ package corp
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"github.com/toolkits/pkg/logger"
 )
+
+const dingTimeOut = time.Second * 1
 
 // Err 微信返回错误
 type Err struct {
@@ -68,7 +75,6 @@ func (c *Client) Send(touser string, msg string) error {
 		params.Set("text", msg)
 		tgurl.RawQuery = params.Encode()
 		urlPath := tgurl.String()
-		println(urlPath)
 		resultByte, err = jsonGet(urlPath)
 	} else {
 		var mongomsg *MangoMessage = new(MangoMessage)
@@ -77,7 +83,6 @@ func (c *Client) Send(touser string, msg string) error {
 		token = c.GetMangoToken()
 		mgurl, _ := url.Parse("https://im.imangoim.com:9091/plugins/xhcodrestapi/v1/apiservice/user" + token + "/sendMessage")
 		urlPath := mgurl.String()
-		println(urlPath)
 		resultByte, err = jsonPost(urlPath, mongomsg)
 	}
 
@@ -128,24 +133,25 @@ func jsonPost(url string, data interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// r, err := http.Post(url, "application/json;charset=utf-8", bytes.NewReader(jsonBody))
-
-	r, err := http.NewRequest("POST", "application/json;charset=utf-8", bytes.NewReader(jsonBody))
-	r.Header.Add("Authorization", "eXwdrXrvrjsHDs7F")
-	clt := http.Client{}
-	clt.Do(r)
-
+	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
 	if err != nil {
+		logger.Info("mango new post request err =>", err)
+		return nil, err
+	}
+	req.Header.Set("Authorization", "eXwdrXrvrjsHDs7F")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := getClient()
+	// client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Error("mango post request err =>", err)
 		return nil, err
 	}
 
-	if r.Body == nil {
-		return nil, fmt.Errorf("response body of %s is nil", url)
-	}
+	defer resp.Body.Close()
 
-	defer r.Body.Close()
-
-	return ioutil.ReadAll(r.Body)
+	return ioutil.ReadAll(resp.Body)
 }
 
 func encodeJSON(v interface{}) ([]byte, error) {
@@ -156,4 +162,21 @@ func encodeJSON(v interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func getClient() *http.Client {
+	// 通过http.Client 中的 DialContext 可以设置连接超时和数据接受超时 （也可以使用Dial, 不推荐）
+	return &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (conn net.Conn, e error) {
+				conn, err := net.DialTimeout(network, addr, dingTimeOut) // 设置建立链接超时
+				if err != nil {
+					return nil, err
+				}
+				_ = conn.SetDeadline(time.Now().Add(dingTimeOut)) // 设置接受数据超时时间
+				return conn, nil
+			},
+			ResponseHeaderTimeout: dingTimeOut, // 设置服务器响应超时时间
+		},
+	}
 }
