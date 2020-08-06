@@ -81,7 +81,7 @@ func (c *Client) Send(touser string, msg string) error {
 		mongomsg.RoomName = user[1]
 		mongomsg.Text = msg
 		token = c.GetMangoToken()
-		mgurl, _ := url.Parse("https://im.imangoim.com:9091/plugins/xhcodrestapi/v1/apiservice/user" + token + "/sendMessage")
+		mgurl, _ := url.Parse("https://im.imangoim.com:9091/plugins/xhcodrestapi/v1/apiservice/user" + token + "/sendmessage")
 		urlPath := mgurl.String()
 		resultByte, err = jsonPost(urlPath, mongomsg)
 	}
@@ -152,7 +152,6 @@ func jsonPost(url string, data interface{}) ([]byte, error) {
 
 	defer resp.Body.Close()
 	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Header:", resp.Header["Authorization"])
 	return ioutil.ReadAll(resp.Body)
 }
 
